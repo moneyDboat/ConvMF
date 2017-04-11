@@ -53,8 +53,10 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
     # return the theta of CNN
     theta = cnn_module.get_projection_layer(CNN_X)
     np.random.seed(133)
+    # dimension is the k
     U = np.random.uniform(size=(num_user, dimension))
     V = theta
+    print("Jay::theta over")
 
     endure_count = 5
     count = 0
