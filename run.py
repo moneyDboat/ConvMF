@@ -5,6 +5,7 @@ Created on Dec 9, 2015
 '''
 import argparse
 import sys
+import os
 from data_manager import Data_Factory
 
 parser = argparse.ArgumentParser()

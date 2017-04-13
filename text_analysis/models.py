@@ -168,7 +168,7 @@ class CNN_module():
 
         print("Train...CNN module")
         history = self.model.fit(X_train, V, verbose=0, batch_size=self.batch_size,
-                                 nb_epoch=self.nb_epoch, sample_weight=item_weight)
+                                 epochs=self.nb_epoch, sample_weight=item_weight)
 
         # cnn_loss_his = history.history['loss']
         # cmp_cnn_loss = sorted(cnn_loss_his)[::-1]

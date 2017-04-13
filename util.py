@@ -10,7 +10,7 @@ def eval_RMSE(R, U, V, TS):
     num_user = U.shape[0]
     sub_rmse = np.zeros(num_user)
     TS_count = 0
-    for i in xrange(num_user):
+    for i in range(num_user):
         idx_item = TS[i]
         if len(idx_item) == 0:
             continue
@@ -27,7 +27,7 @@ def eval_RMSE(R, U, V, TS):
 
 def make_CDL_format(X_base, path):
     max_X = X_base.max(1).toarray()
-    for i in xrange(max_X.shape[0]):
+    for i in range(max_X.shape[0]):
         if max_X[i, 0] == 0:
             max_X[i, 0] = 1
     max_X_rep = np.tile(max_X, (1, X_base.shape[1]))

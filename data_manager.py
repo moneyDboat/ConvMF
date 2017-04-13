@@ -64,10 +64,15 @@ class Data_Factory():
 
     # 生成词向量矩阵
     def read_pretrained_word2vec(self, path, vocab, dim):
+        parent_path = '/'.join(path.split('/')[:-1]) + '/'
+        if os.path.isfile(parent_path + 'preW.all'):
+            print('Load pretrained_word2vec from preW.all')
+            W = pickle.load(open(parent_path + 'preW.all', 'rb'))
+            return W
         if os.path.isfile(path):
             raw_word2vec = open(path, 'r')
         else:
-            print ("Path (word2vec) is wrong!")
+            print("Path (word2vec) is wrong!")
             sys.exit()
 
         word2vec_dic = {}
@@ -79,7 +84,7 @@ class Data_Factory():
             _word = tmp[0]
             _vec = np.array(tmp[1:], dtype=float)
             if _vec.shape[0] != dim:
-                print ("Mismatch the dimension of pre-trained word vector with word embedding dimension!")
+                print("Mismatch the dimension of pre-trained word vector with word embedding dimension!")
                 sys.exit()
             word2vec_dic[_word] = _vec
             mean = mean + _vec
@@ -96,7 +101,10 @@ class Data_Factory():
             else:
                 W[i + 1] = np.random.normal(mean, 0.1, size=dim)
 
-        print ("%d words exist in the given pretrained model" % count)
+        print("%d words exist in the given pretrained model" % count)
+        print('Saving preW.all file.')
+        pickle.dump(W, open(parent_path +'preW.all', 'wb'))
+        print('Done')
 
         return W
 
@@ -108,8 +116,10 @@ class Data_Factory():
             np.random.shuffle(user_rating)
             train.append((i, user_rating[0]))
 
+        # "*train" to open a list
         remain_item = set(range(R.shape[1])) - set(list(zip(*train))[1])
 
+        # to make sure that training set contains at least a rating on every user and item
         for j in remain_item:
             item_rating = R.tocsc().T[j].nonzero()[1]
             np.random.shuffle(item_rating)
@@ -135,10 +145,10 @@ class Data_Factory():
             trainset_u_idx = set(trainset_u_idx)
             trainset_i_idx = set(trainset_i_idx)
             if len(trainset_u_idx) != R.shape[0] or len(trainset_i_idx) != R.shape[1]:
-                print ("Fatal error in split function. Check your data again or contact authors")
+                print("Fatal error in split function. Check your data again or contact authors")
                 sys.exit()
 
-        print ("Finish constructing training set and test set")
+        print("Finish constructing training set and test set")
         return train, valid, test
 
     def generate_train_valid_test_file_from_R(self, path, R, ratio):
@@ -153,7 +163,7 @@ class Data_Factory():
         - ratio: (1-ratio), ratio/2 and ratio/2 of the entire dataset (R) will be training, valid and test set, respectively
         '''
         train, valid, test = self.split_data(ratio, R)
-        print ("Save training set and test set to %s..." % path)
+        print("Save training set and test set to %s..." % path)
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -248,7 +258,7 @@ class Data_Factory():
         formatted_item_test = []
 
         for j in range(R.shape[1]):
-            if i in item_ratings_train:
+            if j in item_ratings_train:
                 formatted = [str(len(item_ratings_train[j]))]
                 formatted.extend(["%d:%.1f" % (i, R_lil[i, j])
                                   for i in sorted(item_ratings_train[j])])
@@ -279,9 +289,9 @@ class Data_Factory():
         f_train_item.close()
         f_valid_item.close()
         f_test_item.close()
-        print ("\ttrain_item.dat, valid_item.dat, test_item.dat files are generated.")
+        print("\ttrain_item.dat, valid_item.dat, test_item.dat files are generated.")
 
-        print ("Done!")
+        print("Done!")
 
     def generate_CTRCDLformat_content_file_from_D_all(self, path, D_all):
         '''
@@ -378,6 +388,7 @@ class Data_Factory():
         item = []
         rating = []
 
+        # convert to CSR format to represent sparse matrix
         for line in all_line:
             tmp = line.split('::')
             u = tmp[0]
@@ -433,7 +444,7 @@ class Data_Factory():
 
         # Make vocabulary by document
         vectorizer = TfidfVectorizer(max_df=_max_df, stop_words={
-                                     'english'}, max_features=_vocab_size)
+            'english'}, max_features=_vocab_size)
         Raw_X = [map_idtoplot[i] for i in range(R.shape[1])]
         vectorizer.fit(Raw_X)
         vocab = vectorizer.vocabulary_
