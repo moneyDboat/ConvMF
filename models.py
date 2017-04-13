@@ -30,8 +30,8 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
     f1 = open(res_dir + '/state.log', 'w')
     # state.log record
 
-    Train_R_I = train_user[1]
-    Train_R_J = train_item[1]
+    Train_R_I = train_user[1] #6040
+    Train_R_J = train_item[1] #3544
     Test_R = test_user[1]
     Valid_R = valid_user[1]
 

@@ -130,6 +130,7 @@ else:
         init_W = data_factory.read_pretrained_word2vec(
             pretrain_w2v, D_all['X_vocab'], emb_dim)
 
+    # the form of data is : [[],[]]
     train_user = data_factory.read_rating(data_path + '/train_user.dat')
     train_item = data_factory.read_rating(data_path + '/train_item.dat')
     valid_user = data_factory.read_rating(data_path + '/valid_user.dat')
