@@ -5,7 +5,7 @@ Created on Dec 8, 2015
 '''
 import numpy as np
 
-
+# calculate RMSE
 def eval_RMSE(R, U, V, TS):
     num_user = U.shape[0]
     sub_rmse = np.zeros(num_user)

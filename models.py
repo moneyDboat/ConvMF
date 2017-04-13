@@ -60,10 +60,11 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
 
     endure_count = 5
     count = 0
+    #max_iter is 50
     for iteration in range(max_iter):
         loss = 0
         tic = time.time()
-        print ("%d iteration\t(patience: %d)" % (iteration, count))
+        print("%d iteration\t(patience: %d)" % (iteration, count))
 
         VV = b * (V.T.dot(V)) + lambda_u * np.eye(dimension)
         sub_loss = np.zeros(num_user)
@@ -130,6 +131,7 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
         f1.write("Loss: %.5f Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f\n" % (
             loss, elapsed, converge, tr_eval, val_eval, te_eval))
 
+        # endure_count = 5
         if count == endure_count:
             break
 
