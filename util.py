@@ -14,8 +14,8 @@ def eval_RMSE(R, U, V, TS):
         idx_item = TS[i]
         if len(idx_item) == 0:
             continue
-        TS_count = TS_count + len(idx_item)
-        approx_R_i = U[i].dot(V[idx_item].T)  # approx_R[i, idx_item]
+        TS_count += len(idx_item)
+        approx_R_i = U[i].dot(V[idx_item].T)  # approx_R[i][idx_item]
         R_i = R[i]
 
         sub_rmse[i] = np.square(approx_R_i - R_i).sum()

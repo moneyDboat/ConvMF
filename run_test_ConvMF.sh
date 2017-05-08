@@ -2,9 +2,9 @@
 python ./run.py \
 -d ./data/preprocessed/ml-1m/0.2/ \
 -a ./data/preprocessed/ml-1m/ \
--o ./test/ml-1m/result/1_100_200 \
+-o ./result/ml-1m/1_100_200 \
 -e 50 \
--p ./data/preprocessed/glove/glove.6B.50d.txt \
+-p ./data/glove/glove.6B.50d.txt \
 -u 10 \
 -v 100 \
 -g True

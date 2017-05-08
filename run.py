@@ -73,14 +73,14 @@ if do_preprocess:
     vocab_size = args.vocab_size
     split_ratio = args.split_ratio
 
-    print ("=================================Preprocess Option Setting=================================")
-    print ("\tsaving preprocessed aux path - %s" % aux_path)
-    print ("\tsaving preprocessed data path - %s" % data_path)
-    print ("\trating data path - %s" % path_rating)
-    print ("\tdocument data path - %s" % path_itemtext)
-    print ("\tmin_rating: %d\n\tmax_length_document: %d\n\tmax_df: %.1f\n\tvocab_size: %d\n\tsplit_ratio: %.1f" \
-        % (min_rating, max_length, max_df, vocab_size, split_ratio))
-    print ("===========================================================================================")
+    print("================================= Preprocess Option Setting=================================")
+    print("\t saving preprocessed aux path - %s" % aux_path)
+    print("\t saving preprocessed data path - %s" % data_path)
+    print("\t rating data path - %s" % path_rating)
+    print("\t document data path - %s" % path_itemtext)
+    print("\t min_rating: %d\n\t max_length_document: %d\n\t max_df: %.1f\n\t vocab_size: %d\n\t split_ratio: %.1f" %
+          (min_rating, max_length, max_df, vocab_size, split_ratio))
+    print("===========================================================================================")
 
     R, D_all = data_factory.preprocess(
         path_rating, path_itemtext, min_rating, max_length, max_df, vocab_size)
@@ -105,14 +105,14 @@ else:
     if lambda_v is None:
         sys.exit("Argument missing - lambda_v is required")
 
-    print ("===================================ConvMF Option Setting===================================")
-    print ("\taux path - %s" % aux_path)
-    print ("\tdata path - %s" % data_path)
-    print ("\tresult path - %s" % res_dir)
-    print ("\tpretrained w2v data path - %s" % pretrain_w2v)
-    print ("\tdimension: %d\n\tlambda_u: %.4f\n\tlambda_v: %.4f\n\tmax_iter: %d\n\tnum_kernel_per_ws: %d" \
-        % (dimension, lambda_u, lambda_v, max_iter, num_kernel_per_ws))
-    print ("===========================================================================================")
+    print("=================================== ConvMF Option Setting===================================")
+    print("\t aux path - %s" % aux_path)
+    print("\t data path - %s" % data_path)
+    print("\t result path - %s" % res_dir)
+    print("\t pretrained w2v data path - %s" % pretrain_w2v)
+    print("\t dimension: %d\n\t lambda_u: %.4f\n\t lambda_v: %.4f\n\t max_iter: %d\n\t num_kernel_per_ws: %d" %
+          (dimension, lambda_u, lambda_v, max_iter, num_kernel_per_ws))
+    print("===========================================================================================")
 
     R, D_all = data_factory.load(aux_path)
     CNN_X = D_all['X_sequence']
