@@ -16,17 +16,20 @@ parser.add_argument("-c", "--do_preprocess", type=bool,
 parser.add_argument("-r", "--raw_rating_data_path", type=str,
                     help="Path to raw rating data. data format - user id::item id::rating")
 parser.add_argument("-i", "--raw_item_document_data_path", type=str,
-                    help="Path to raw item document data. item document consists of multiple text. data format - item id::text1|text2...")
+                    help="Path to raw item document data. item document consists of multiple text. data format - item "
+                         "id::text1|text2...")
 parser.add_argument("-m", "--min_rating", type=int,
                     help="Users who have less than \"min_rating\" ratings will be removed (default = 1)", default=1)
 parser.add_argument("-l", "--max_length_document", type=int,
                     help="Maximum length of document of each item (default = 300)", default=300)
 parser.add_argument("-f", "--max_df", type=float,
-                    help="Threshold to ignore terms that have a document frequency higher than the given value (default = 0.5)", default=0.5)
+                    help="Threshold to ignore terms that have a document frequency higher than the given value "
+                         "(default = 0.5)", default=0.5)
 parser.add_argument("-s", "--vocab_size", type=int,
                     help="Size of vocabulary (default = 8000)", default=8000)
 parser.add_argument("-t", "--split_ratio", type=float,
-                    help="Ratio: 1-ratio, ratio/2 and ratio/2 of the entire dataset (R) will be training, valid and test set, respectively (default = 0.2)", default=0.2)
+                    help="Ratio: 1-ratio, ratio/2 and ratio/2 of the entire dataset (R) will be training, valid and "
+                         "test set, respectively (default = 0.2)", default=0.2)
 
 # Option for pre-processing data and running ConvMF
 parser.add_argument("-d", "--data_path", type=str,
