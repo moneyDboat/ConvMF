@@ -21,27 +21,27 @@ class Data_Factory():
 
     def load(self, path):
         R = pickle.load(open(path + "/ratings.all", "rb"))
-        print ("Load preprocessed rating data - %s" % (path + "/ratings.all"))
+        print("Load preprocessed rating data - %s" % (path + "/ratings.all"))
         D_all = pickle.load(open(path + "/document.all", "rb"))
-        print ("Load preprocessed document data - %s" % (path + "/document.all"))
+        print("Load preprocessed document data - %s" % (path + "/document.all"))
         return R, D_all
 
     def save(self, path, R, D_all):
         if not os.path.exists(path):
             os.makedirs(path)
-        print ("Saving preprocessed rating data - %s" % (path + "/ratings.all"))
+        print("Saving preprocessed rating data - %s" % (path + "/ratings.all"))
         pickle.dump(R, open(path + "/ratings.all", "wb"))
-        print ("Done!")
-        print ("Saving preprocessed document data - %s" % (path + "/document.all"))
+        print("Done!")
+        print("Saving preprocessed document data - %s" % (path + "/document.all"))
         pickle.dump(D_all, open(path + "/document.all", "wb"))
-        print ("Done!")
+        print("Done!")
 
     def read_rating(self, path):
         results = []
         if os.path.isfile(path):
             raw_ratings = open(path, 'r')
         else:
-            print ("Path (preprocessed) is wrong!")
+            print("Path (preprocessed) is wrong!")
             sys.exit()
         index_list = []
         rating_list = []
@@ -109,7 +109,7 @@ class Data_Factory():
         return W
 
     def split_data(self, ratio, R):
-        print ("Randomly splitting rating data into training set (%.1f) and test set (%.1f)..." % (1 - ratio, ratio))
+        print("Randomly splitting rating data into training set (%.1f) and test set (%.1f)..." % (1 - ratio, ratio))
         train = []
         for i in range(R.shape[0]):
             user_rating = R[i].nonzero()[1]
@@ -132,7 +132,7 @@ class Data_Factory():
 
         num_addition = int((1 - ratio) * total_size) - len(train)
         if num_addition < 0:
-            print ('this ratio cannot be handled')
+            print('this ratio cannot be handled')
             sys.exit()
         else:
             train.extend(remain_rating_list[:num_addition])
@@ -247,7 +247,7 @@ class Data_Factory():
         f_train_user.close()
         f_valid_user.close()
         f_test_user.close()
-        print ("\ttrain_user.dat, valid_user.dat, test_user.dat files are generated.")
+        print("\ttrain_user.dat, valid_user.dat, test_user.dat files are generated.")
 
         f_train_item = open(path + "/train_item.dat", "w")
         f_valid_item = open(path + "/valid_item.dat", "w")
@@ -331,34 +331,37 @@ class Data_Factory():
         # Validate data paths
         if os.path.isfile(path_rating):
             raw_ratings = open(path_rating, 'r')
-            print ("Path - rating data: %s" % path_rating)
+            print("Path - rating data: %s" % path_rating)
         else:
-            print ("Path(rating) is wrong!")
+            print("Path(rating) is wrong!")
             sys.exit()
 
         if os.path.isfile(path_itemtext):
             raw_content = open(path_itemtext, 'r')
-            print ("Path - document data: %s" % path_itemtext)
+            print("Path - document data: %s" % path_itemtext)
         else:
-            print ("Path(item text) is wrong!")
+            print("Path(item text) is wrong!")
             sys.exit()
 
         # 1st scan document file to filter items which have documents
         tmp_id_plot = set()
         all_line = raw_content.read().splitlines()
-        #content format:(1::a little boy |)
+        # content format:(1::a little boy |)
         for line in all_line:
             tmp = line.split('::')
             i = tmp[0]
-            tmp_plot = tmp[1].split('|')
+            try:
+                tmp_plot = tmp[1].split('|')
+            except:
+                print(tmp[0])
             if tmp_plot[0] == '':
                 continue
-            #tmp_id_plot to remove rating that has no content
+            # tmp_id_plot to remove rating that has no content
             tmp_id_plot.add(i)
         raw_content.close()
 
-        print ("Preprocessing rating data...")
-        print ("\tCounting # ratings of each user and removing users having less than %d ratings..." % min_rating)
+        print("Preprocessing rating data...")
+        print("\tCounting # ratings of each user and removing users having less than %d ratings..." % min_rating)
         # 1st scan rating file to check # ratings of each user
         all_line = raw_ratings.read().splitlines()
         tmp_user = {}
@@ -420,11 +423,11 @@ class Data_Factory():
         # sparse matrix
         R = csr_matrix((rating, (user, item)))
 
-        print ("Finish preprocessing rating data - # user: %d, # item: %d, # ratings: %d" % (R.shape[0], R.shape[1], R.nnz))
+        print("Finish preprocessing rating data - # user: %d, # item: %d, # ratings: %d" % (R.shape[0], R.shape[1], R.nnz))
 
         # 2nd scan document file to make idx2plot dictionary according to
         # indices of items in rating matrix
-        print ("Preprocessing item document...")
+        print("Preprocessing item document...")
 
         # Read Document File
         raw_content = open(path_itemtext, 'r')
@@ -439,8 +442,8 @@ class Data_Factory():
                 eachid_plot = (' '.join(tmp_plot)).split()[:max_length]
                 map_idtoplot[i] = ' '.join(eachid_plot)
 
-        print ("\tRemoving stop words...")
-        print ("\tFiltering words by TF-IDF score with max_df: %.1f, vocab_size: %d" % (_max_df, _vocab_size))
+        print("\tRemoving stop words...")
+        print("\tFiltering words by TF-IDF score with max_df: %.1f, vocab_size: %d" % (_max_df, _vocab_size))
 
         # Make vocabulary by document
         vectorizer = TfidfVectorizer(max_df=_max_df, stop_words={
@@ -466,6 +469,6 @@ class Data_Factory():
             'X_vocab': X_vocab,
         }
 
-        print ("Finish preprocessing document data!")
+        print("Finish preprocessing document data!")
 
         return R, D_all
