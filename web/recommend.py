@@ -1,8 +1,10 @@
 
 
 def predict():
-    U = open('U.dat', 'r')
-    V = open('V.dat', 'r')
+    f1 = open('U.dat', 'r')
+    f2 = open('V.dat', 'r')
+    U = f1.read()
+    V = f2.read()
 
 
 
