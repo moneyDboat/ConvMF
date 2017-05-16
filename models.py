@@ -1,9 +1,3 @@
-'''
-Created on Dec 8, 2015
-
-@author: donghyun
-'''
-
 import os
 import time
 
@@ -126,7 +120,7 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
 
         pre_val_eval = val_eval
 
-        print ("Loss: %.5f Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f" % (
+        print("Loss: %.5f Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f" % (
             loss, elapsed, converge, tr_eval, val_eval, te_eval))
         f1.write("Loss: %.5f Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f\n" % (
             loss, elapsed, converge, tr_eval, val_eval, te_eval))

@@ -1,8 +1,3 @@
-'''
-Created on Dec 9, 2015
-
-@author: donghyunz
-'''
 import argparse
 import sys
 import os

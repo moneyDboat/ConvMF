@@ -1,9 +1,3 @@
-'''
-Created on Nov 9, 2015
-
-@author: donghyun
-'''
-
 import os
 import sys
 import pickle

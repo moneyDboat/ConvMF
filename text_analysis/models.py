@@ -1,8 +1,3 @@
-'''
-Created on Dec 8, 2015
-
-@author: donghyun
-'''
 import numpy as np
 np.random.seed(1337)
 
