@@ -1,3 +1,5 @@
+#coding:utf-8
+
 import numpy as np
 np.random.seed(1337)
 
@@ -73,43 +75,6 @@ class CNN_module():
                            loss='mse')
 
         print("Jay::compile completed")
-
-        # '''Embedding Layer'''
-        # self.model.add_input(name='input', input_shape=(max_len,), dtype=int)
-        #
-        # if init_W is None:
-        #     self.model.add_node(Embedding(
-        #         max_features, emb_dim, input_length=max_len), name='sentence_embeddings', input='input')
-        # else:
-        #     self.model.add_node(Embedding(max_features, emb_dim, input_length=max_len, weights=[
-        #                         init_W / 20]), name='sentence_embeddings', input='input')
-        #
-        # '''Convolution Layer & Max Pooling Layer'''
-        # for i in filter_lengths:
-        #     model_internal = Sequential()
-        #     model_internal.add(
-        #         Reshape(dims=(1, self.max_len, emb_dim), input_shape=(self.max_len, emb_dim)))
-        #     model_internal.add(Convolution2D(
-        #         nb_filters, i, emb_dim, activation="relu"))
-        #     model_internal.add(MaxPooling2D(
-        #         pool_size=(self.max_len - i + 1, 1)))
-        #     model_internal.add(Flatten())
-        #
-        #     self.model.add_node(model_internal, name='unit_' +
-        #                         str(i), input='sentence_embeddings')
-        #
-        # '''Dropout Layer'''
-        # self.model.add_node(Dense(vanila_dimension, activation='tanh'),
-        #                     name='fully_connect', inputs=['unit_' + str(i) for i in filter_lengths])
-        # self.model.add_node(Dropout(dropout_rate),
-        #                     name='dropout', input='fully_connect')
-        # '''Projection Layer & Output Layer'''
-        # self.model.add_node(Dense(projection_dimension, activation='tanh'),
-        #                     name='projection', input='dropout')
-        #
-        # # Output Layer
-        # self.model.add_output(name='output', input='projection')
-        # self.model.compile('rmsprop', {'output': 'mse'})
 
     def load_model(self, model_path):
         self.model.load_weights(model_path)
