@@ -19,7 +19,9 @@ class CNN(nn.Module):
         projection_dimension = output_dimesion
         self.qual_conv_set = {}
 
-        self.embedding = nn.Embedding()
+        '''Embedding Layer'''
+        if init_W is None:
+            self.embedding = nn.Embedding(max_features, emb_dim)
 
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, nb_filters, kernel_size=(3, emb_dim)),

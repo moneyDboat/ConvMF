@@ -31,7 +31,6 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
     Test_R = test_user[1]
     Valid_R = valid_user[1]
 
-    # 这部分暂时不知道有什么用
     if give_item_weight is True:
         item_weight = np.array([math.sqrt(len(i))
                                 for i in Train_R_J], dtype=float)

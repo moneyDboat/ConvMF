@@ -59,6 +59,7 @@ class Data_Factory():
         return results
 
     # 生成词向量矩阵
+    # 这部分可以用torchwordemb代替
     def read_pretrained_word2vec(self, path, vocab, dim):
         parent_path = '/'.join(path.split('/')[:-1]) + '/'
         if os.path.isfile(parent_path + 'preW.all'):

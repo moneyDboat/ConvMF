@@ -3,3 +3,5 @@ data/
 .idea/
 result/
 venv/
+.ipynb_checkpoints/
+*.ipynb
