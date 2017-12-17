@@ -37,7 +37,7 @@ class CNN(nn.Module):
         )
 
 
-        self.conv_1 =
+        self.conv_1 = nn.Conv2d(1, nb_filters, kernel_size=(3, emb_dim))
         self.conv_2 = nn.Conv2d(1, nb_filters, kernel_size=(4, emb_dim))
         self.conv_3 = nn.Conv2d(1, nb_filters, kernel_size=(5, emb_dim))
 
