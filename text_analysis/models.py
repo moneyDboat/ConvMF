@@ -118,6 +118,7 @@ class CNN_module():
             'rmsprop', {'output_3': 'mse', 'output_4': 'mse', 'output_5': 'mse'})
 
     def train(self, X_train, V, item_weight, seed):
+        # X_train is CNN_X
         X_train = sequence.pad_sequences(X_train, maxlen=self.max_len)
         np.random.seed(seed)
         X_train = np.random.permutation(X_train)
