@@ -4,4 +4,3 @@ data/
 result/
 venv/
 .ipynb_checkpoints/
-*.ipynb
