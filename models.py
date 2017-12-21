@@ -6,8 +6,8 @@ import time
 from util import eval_RMSE
 import math
 import numpy as np
-from text_analysis.models import CNN_module
-
+from cnn_model import CNN
+from torch.autograd import Variable
 
 
 def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
@@ -26,8 +26,8 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
     f1 = open(res_dir + '/state.log', 'w')
     # state.log record
 
-    Train_R_I = train_user[1] #6040
-    Train_R_J = train_item[1] #3544
+    Train_R_I = train_user[1]  # 6040
+    Train_R_J = train_item[1]  # 3544
     Test_R = test_user[1]
     Valid_R = valid_user[1]
 
@@ -42,20 +42,21 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
 
     # dimension: latent of dimension for users and items
     # emb_dim: Size of latent dimension for word vectors
-    cnn_module = CNN_module(dimension, vocab_size, dropout_rate,
+    cnn_module = CNN(dimension, vocab_size, dropout_rate,
                             emb_dim, max_len, num_kernel_per_ws, init_W)
 
-    # return the theta of CNN
+    # return the output of CNN
+    # size of V is (dimension, num_item)
+    theta = cnn_module(Variable(CNN_X))
     theta = cnn_module.get_projection_layer(CNN_X)
     np.random.seed(133)
     # dimension is the k
     U = np.random.uniform(size=(num_user, dimension))
     V = theta
-    print("Jay::theta over")
 
     endure_count = 5
     count = 0
-    #max_iter is 50
+    # max_iter is 50
     for iteration in range(max_iter):
         loss = 0
         tic = time.time()
@@ -96,8 +97,11 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
 
         loss = loss + np.sum(sub_loss)
         seed = np.random.randint(100000)
+
+        # important
         history = cnn_module.train(CNN_X, V, item_weight, seed)
         theta = cnn_module.get_projection_layer(CNN_X)
+
         cnn_loss = history.history['loss'][-1]
 
         loss -= 0.5 * lambda_v * cnn_loss * num_item
