@@ -139,5 +139,6 @@ class CNN_module():
 
     def get_projection_layer(self, X_train):
         X_train = sequence.pad_sequences(X_train, maxlen=self.max_len)
+        X_train = X_train.cuda()
         Y = self.model.predict(X_train, batch_size=len(X_train))
         return Y

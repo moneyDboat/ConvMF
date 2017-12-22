@@ -1,9 +1,10 @@
-#coding:utf-8
+# coding:utf-8
 
 import argparse
 import sys
 import os
 from data_manager import Data_Factory
+import numpy as np
 
 parser = argparse.ArgumentParser()
 
@@ -39,7 +40,7 @@ parser.add_argument("-o", "--res_dir", type=str,
 parser.add_argument("-e", "--emb_dim", type=int,
                     help="Size of latent dimension for word vectors (default: 200)", default=200)
 parser.add_argument("-p", "--pretrain_w2v", type=str,
-                    help="Path to pretrain word embedding model  to initialize word vectors")
+                    help="Path to pretrain word embedding model  to initialize word vectors", default=None)
 parser.add_argument("-g", "--give_item_weight", type=bool,
                     help="True or False to give item weight of ConvMF (default = False)", default=True)
 parser.add_argument("-k", "--dimension", type=int,
@@ -136,7 +137,14 @@ else:
     valid_user = data_factory.read_rating(data_path + '/valid_user.dat')
     test_user = data_factory.read_rating(data_path + '/test_user.dat')
 
+    # CNN_X添加padding，以处理不同长度的文本数据
+    input_array = np.full((len(CNN_X), 300), 8000)
+    for i in range(len(CNN_X)):
+        for j in range(len(CNN_X[i])):
+            input_array[i][j] = CNN_X[i][j]
+
+    # 使用新的填充后的文本数据
     ConvMF(max_iter=max_iter, res_dir=res_dir,
            lambda_u=lambda_u, lambda_v=lambda_v, dimension=dimension, vocab_size=vocab_size, init_W=init_W,
-           give_item_weight=give_item_weight, CNN_X=CNN_X, emb_dim=emb_dim, num_kernel_per_ws=num_kernel_per_ws,
+           give_item_weight=give_item_weight, CNN_X=input_array, emb_dim=emb_dim, num_kernel_per_ws=num_kernel_per_ws,
            train_user=train_user, train_item=train_item, valid_user=valid_user, test_user=test_user, R=R)

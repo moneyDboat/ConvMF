@@ -4,14 +4,18 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 import torch.optim as optim
 from torch.autograd import Variable
 
 
 class CNN(nn.Module):
+    batch_size = 128
+    # More than this epoch cause easily over-fitting on our data sets
+    nb_epoch = 5
+
     def __init__(self, output_dimesion, vocab_size, dropout_rate, emb_dim, max_len, n_filters, init_W=None):
-        # number_filters
-        print(type(self))
+        # n_filter为卷积核个数
         super(CNN, self).__init__()
 
         self.max_len = max_len
@@ -21,9 +25,10 @@ class CNN(nn.Module):
         self.qual_conv_set = {}
 
         '''Embedding Layer'''
-        if init_W is None:
-            # 先尝试使用embedding随机赋值
-            self.embedding = nn.Embedding(vocab_size, emb_dim)
+        # if init_W is None:
+        #     # 最后一个索引为填充的标记文本
+        #     # 先尝试使用随机生成的词向量值
+        self.embedding = nn.Embedding(vocab_size + 1, emb_dim)
 
         self.conv1 = nn.Sequential(
             # 卷积层的激活函数
@@ -53,22 +58,57 @@ class CNN(nn.Module):
         # output_layer = Dense(projection_dimension, activation='tanh')(layer)
         self.output_layer = nn.Linear(vanila_dimension, projection_dimension)
 
-    def forward(self, input):
-        embeds = self.embedding(input)
+    def forward(self, inputs):
+        size = len(inputs)
+        embeds = self.embedding(inputs)
+
         # 进入卷积层前需要将Tensor第二个维度变成emb_dim，作为卷积的通道数
         embeds = embeds.view([len(embeds), self.emb_dim, -1])
         # concatenate the tensors
         x = self.conv1(embeds)
         y = self.conv2(embeds)
         z = self.conv3(embeds)
-        flatten = torch.cat((x.view(-1), y.view(-1), z.view(-1)), 1)
+        flatten = torch.cat((x.view(size, -1), y.view(size, -1), z.view(size, -1)), 1)
 
         out = F.tanh(self.layer(flatten))
         out = self.dropout(out)
         out = F.tanh(self.output_layer(out))
 
-    def train(self, X_train, V, item_weight, seed):
-        pass
+        return out
+
+    def train(self, X_train, V):
+
+        # learning rate暂时定为0.001
+        optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
+
+        for epoch in range(1, self.nb_epoch + 1):
+
+            print('<---epoch' + str(epoch))
+            n_batch = len(X_train) // self.batch_size
+
+            # 这里会漏掉一些训练集，先这样写
+            for i in range(n_batch):
+                begin_idx, end_idx = i * self.batch_size, (i + 1) * self.batch_size
+                feature = X_train[begin_idx:end_idx][...]
+                target = V[begin_idx:end_idx][...]
+
+                feature = Variable(torch.from_numpy(feature.astype('int64')).long())
+                target = Variable(torch.from_numpy(target))
+                feature, target = feature.cuda(), target.cuda()
+
+                optimizer.zero_grad()
+                logit = self(feature)
+
+                loss = F.mse_loss(logit, target)
+                loss.backward()
+                optimizer.step()
+
+    def get_projection_layer(self, X_train):
+        inputs = Variable(torch.from_numpy(X_train.astype('int64')).long())
+        inputs = inputs.cuda()
+        outputs = self(inputs)
+        return outputs.cpu().data.numpy()
+
 
     # 获取CNN模型的输出
 
@@ -78,7 +118,7 @@ class CNN(nn.Module):
     #     np.random.seed(seed)
     #     X_train = np.random.permutation(X_train)
     #     np.random.seed(seed)
-    #     V = np.random.permutation(V)
+    #     V = np.random.permutation(V)ojecti
     #     np.random.seed(seed)
     #     item_weight = np.random.permutation(item_weight)
     #

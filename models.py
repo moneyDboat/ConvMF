@@ -6,8 +6,17 @@ import time
 from util import eval_RMSE
 import math
 import numpy as np
-from cnn_model import CNN
+from text_analysis.cnn_model import CNN
 from torch.autograd import Variable
+import torch
+
+'''
+尚未解决的问题：
+1、word_embedding
+2、batch
+3、give_item_weight到底是做什么用的
+4、模型中seed的用法
+'''
 
 
 def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
@@ -31,6 +40,7 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
     Test_R = test_user[1]
     Valid_R = valid_user[1]
 
+    # 这一部分到底是做什么用的
     if give_item_weight is True:
         item_weight = np.array([math.sqrt(len(i))
                                 for i in Train_R_J], dtype=float)
@@ -40,17 +50,15 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
 
     pre_val_eval = 1e10
 
-    # dimension: latent of dimension for users and items
-    # emb_dim: Size of latent dimension for word vectors
+    # dimension: 用户和物品的隐特征维数
+    # emb_dim: 词向量的维数
     cnn_module = CNN(dimension, vocab_size, dropout_rate,
-                            emb_dim, max_len, num_kernel_per_ws, init_W)
+                     emb_dim, max_len, num_kernel_per_ws, init_W)
 
     # return the output of CNN
-    # size of V is (dimension, num_item)
-    theta = cnn_module(Variable(CNN_X))
+    # size of V is (num_item, dimension)
+    cnn_module = cnn_module.cuda()
     theta = cnn_module.get_projection_layer(CNN_X)
-    np.random.seed(133)
-    # dimension is the k
     U = np.random.uniform(size=(num_user, dimension))
     V = theta
 
@@ -98,25 +106,29 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
         loss = loss + np.sum(sub_loss)
         seed = np.random.randint(100000)
 
-        # important
-        history = cnn_module.train(CNN_X, V, item_weight, seed)
+        # 用V训练CNN模型，更新V
+        cnn_module.train(CNN_X, V)
         theta = cnn_module.get_projection_layer(CNN_X)
 
-        cnn_loss = history.history['loss'][-1]
+        # 这部分添加计算CNN模型的损失
+        # cnn_loss = history.history['loss'][-1]
 
-        loss -= 0.5 * lambda_v * cnn_loss * num_item
+        # loss -= 0.5 * lambda_v * cnn_loss * num_item
 
         tr_eval = eval_RMSE(Train_R_I, U, V, train_user[0])
         val_eval = eval_RMSE(Valid_R, U, V, valid_user[0])
         te_eval = eval_RMSE(Test_R, U, V, test_user[0])
 
+        # 计算一次迭代的时间
         toc = time.time()
         elapsed = toc - tic
 
+        # 计算Loss下降率
         converge = abs((loss - PREV_LOSS) / PREV_LOSS)
 
+        # 存储模型参数
         if val_eval < pre_val_eval:
-            cnn_module.save_model(res_dir + '/CNN_weights.hdf5')
+            # cnn_module.save_model(res_dir + '/CNN_weights.hdf5')
             np.savetxt(res_dir + '/U.dat', U)
             np.savetxt(res_dir + '/V.dat', V)
             np.savetxt(res_dir + '/theta.dat', theta)
@@ -125,12 +137,12 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
 
         pre_val_eval = val_eval
 
-        print("Loss: %.5f Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f" % (
-            loss, elapsed, converge, tr_eval, val_eval, te_eval))
-        f1.write("Loss: %.5f Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f\n" % (
-            loss, elapsed, converge, tr_eval, val_eval, te_eval))
+        print("Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f" % (
+             elapsed, converge, tr_eval, val_eval, te_eval))
+        f1.write("Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f\n" % (
+            elapsed, converge, tr_eval, val_eval, te_eval))
 
-        # endure_count = 5
+        # 超过五次则退出迭代训练
         if count == endure_count:
             break
 
