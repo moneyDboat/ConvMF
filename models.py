@@ -16,11 +16,13 @@ import torch
 2、batch
 3、give_item_weight到底是做什么用的
 4、模型中seed的用法
+5、一些参数的设置
+6、添加cuda参数来控制是否使用GPU
 '''
 
 
 def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
-           R, CNN_X, vocab_size, init_W=None, give_item_weight=True,
+           R, CNN_X, vocab_size, if_cuda, init_W=None, give_item_weight=True,
            max_iter=50, lambda_u=1, lambda_v=100, dimension=50,
            dropout_rate=0.2, emb_dim=200, max_len=300, num_kernel_per_ws=100):
     # explicit setting
@@ -40,7 +42,6 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
     Test_R = test_user[1]
     Valid_R = valid_user[1]
 
-    # 这一部分到底是做什么用的
     if give_item_weight is True:
         item_weight = np.array([math.sqrt(len(i))
                                 for i in Train_R_J], dtype=float)
@@ -49,15 +50,18 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
         item_weight = np.ones(num_item, dtype=float)
 
     pre_val_eval = 1e10
+    best_tr_eval, best_val_eval, best_te_eval = 1e10, 1e10, 1e10
 
     # dimension: 用户和物品的隐特征维数
     # emb_dim: 词向量的维数
+    # if_cuda: 是否用GPU训练CNN
     cnn_module = CNN(dimension, vocab_size, dropout_rate,
-                     emb_dim, max_len, num_kernel_per_ws, init_W)
+                     emb_dim, max_len, num_kernel_per_ws, if_cuda, init_W)
 
-    # return the output of CNN
+    # 返回CNN的output
     # size of V is (num_item, dimension)
-    cnn_module = cnn_module.cuda()
+    if if_cuda:
+        cnn_module = cnn_module.cuda()
     theta = cnn_module.get_projection_layer(CNN_X)
     U = np.random.uniform(size=(num_user, dimension))
     V = theta
@@ -104,7 +108,6 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
             sub_loss[j] = sub_loss[j] - 0.5 * np.dot(V[j].dot(tmp_A), V[j])
 
         loss = loss + np.sum(sub_loss)
-        seed = np.random.randint(100000)
 
         # 用V训练CNN模型，更新V
         cnn_module.train(CNN_X, V)
@@ -126,9 +129,10 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
         # 计算Loss下降率
         converge = abs((loss - PREV_LOSS) / PREV_LOSS)
 
-        # 存储模型参数
+        # 存储效果最好的模型参数
         if val_eval < pre_val_eval:
-            # cnn_module.save_model(res_dir + '/CNN_weights.hdf5')
+            torch.save(cnn_module, res_dir+'CNN_model.pt')
+            best_tr_eval, best_val_eval, best_te_eval = tr_eval, val_eval, te_eval
             np.savetxt(res_dir + '/U.dat', U)
             np.savetxt(res_dir + '/V.dat', V)
             np.savetxt(res_dir + '/theta.dat', theta)
@@ -137,13 +141,17 @@ def ConvMF(res_dir, train_user, train_item, valid_user, test_user,
 
         pre_val_eval = val_eval
 
-        print("Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f" % (
-             elapsed, converge, tr_eval, val_eval, te_eval))
-        f1.write("Elpased: %.4fs Converge: %.6f Tr: %.5f Val: %.5f Te: %.5f\n" % (
+        print("Elpased: %.4fs Converge: %.6f Train: %.5f Valid: %.5f Test: %.5f" % (
+            elapsed, converge, tr_eval, val_eval, te_eval))
+        f1.write("Elpased: %.4fs Converge: %.6f Train: %.5f Valid: %.5f Test: %.5f\n" % (
             elapsed, converge, tr_eval, val_eval, te_eval))
 
         # 超过五次则退出迭代训练
         if count == endure_count:
+            print("\n\nBest Model: Train: %.5f Valid: %.5f Test: %.5f" % (
+                best_tr_eval, best_val_eval, best_te_eval))
+            f1.write("\n\nBest Model: Train: %.5f Valid: %.5f Test: %.5f\n" % (
+                best_tr_eval, best_val_eval, best_te_eval))
             break
 
         PREV_LOSS = loss

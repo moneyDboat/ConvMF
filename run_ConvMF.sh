@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 python ./run.py \
+-cu True \
 -d ./data/preprocessed/ml-1m/0.2/ \
 -a ./data/preprocessed/ml-1m/ \
 -o ./result/ml-1m/1_100_200 \
 -e 50 \
--u 10 \
--v 100 \
+-u 100 \
+-v 10 \
+-w 100 \
 -g True
 
 

@@ -35,6 +35,8 @@ parser.add_argument("-d", "--data_path", type=str,
 parser.add_argument("-a", "--aux_path", type=str, help="Path to R, D_all sets")
 
 # Option for running ConvMF
+parser.add_argument("-cu", "--if_cuda", type=bool,
+                    help="if use GPU to train in pytorch", default=False)
 parser.add_argument("-o", "--res_dir", type=str,
                     help="Path to ConvMF's result")
 parser.add_argument("-e", "--emb_dim", type=int,
@@ -110,6 +112,7 @@ else:
     print("\t aux path - %s" % aux_path)
     print("\t data path - %s" % data_path)
     print("\t result path - %s" % res_dir)
+    print("\t if cuda - %s" % args.if_cuda)
     print("\t pretrained w2v data path - %s" % pretrain_w2v)
     print("\t dimension: %d\n\t lambda_u: %.4f\n\t lambda_v: %.4f\n\t max_iter: %d\n\t num_kernel_per_ws: %d" %
           (dimension, lambda_u, lambda_v, max_iter, num_kernel_per_ws))
@@ -147,4 +150,5 @@ else:
     ConvMF(max_iter=max_iter, res_dir=res_dir,
            lambda_u=lambda_u, lambda_v=lambda_v, dimension=dimension, vocab_size=vocab_size, init_W=init_W,
            give_item_weight=give_item_weight, CNN_X=input_array, emb_dim=emb_dim, num_kernel_per_ws=num_kernel_per_ws,
-           train_user=train_user, train_item=train_item, valid_user=valid_user, test_user=test_user, R=R)
+           train_user=train_user, train_item=train_item, valid_user=valid_user, test_user=test_user, R=R,
+           if_cuda=args.if_cuda)

@@ -1,6 +1,6 @@
 # coding:utf-8
 
-# Pytorch
+# 导入Pytorch相关模块
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,13 +14,14 @@ class CNN(nn.Module):
     # More than this epoch cause easily over-fitting on our data sets
     nb_epoch = 5
 
-    def __init__(self, output_dimesion, vocab_size, dropout_rate, emb_dim, max_len, n_filters, init_W=None):
+    def __init__(self, output_dimesion, vocab_size, dropout_rate, emb_dim, max_len, n_filters, if_cuda, init_W=None):
         # n_filter为卷积核个数
         super(CNN, self).__init__()
 
         self.max_len = max_len
         self.emb_dim = emb_dim
-        vanila_dimension = 200  # 倒数第二层的节点数
+        self.if_cuda = if_cuda
+        vanila_dimension = 2*n_filters  # 倒数第二层的节点数
         projection_dimension = output_dimesion  # 输出层的节点数
         self.qual_conv_set = {}
 
@@ -49,13 +50,10 @@ class CNN(nn.Module):
         )
 
         '''Dropout Layer'''
-        # layer = Dense(vanila_dimension, activation='tanh')(flatten_layer)
-        # layer = Dropout(dropout_rate)(layer)
-        self.layer = nn.Linear(300, vanila_dimension)
+        self.layer = nn.Linear(n_filters*3, vanila_dimension)
         self.dropout = nn.Dropout(dropout_rate)
 
         '''Projection Layer & Output Layer'''
-        # output_layer = Dense(projection_dimension, activation='tanh')(layer)
         self.output_layer = nn.Linear(vanila_dimension, projection_dimension)
 
     def forward(self, inputs):
@@ -82,19 +80,23 @@ class CNN(nn.Module):
         optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
 
         for epoch in range(1, self.nb_epoch + 1):
-
-            print('<---epoch' + str(epoch))
             n_batch = len(X_train) // self.batch_size
 
             # 这里会漏掉一些训练集，先这样写
-            for i in range(n_batch):
+            for i in range(n_batch+1):
                 begin_idx, end_idx = i * self.batch_size, (i + 1) * self.batch_size
-                feature = X_train[begin_idx:end_idx][...]
-                target = V[begin_idx:end_idx][...]
+
+                if i<n_batch:
+                    feature = X_train[begin_idx:end_idx][...]
+                    target = V[begin_idx:end_idx][...]
+                else:
+                    feature = X_train[begin_idx:][...]
+                    target = V[begin_idx:][...]
 
                 feature = Variable(torch.from_numpy(feature.astype('int64')).long())
                 target = Variable(torch.from_numpy(target))
-                feature, target = feature.cuda(), target.cuda()
+                if self.if_cuda:
+                    feature, target = feature.cuda(), target.cuda()
 
                 optimizer.zero_grad()
                 logit = self(feature)
@@ -105,34 +107,7 @@ class CNN(nn.Module):
 
     def get_projection_layer(self, X_train):
         inputs = Variable(torch.from_numpy(X_train.astype('int64')).long())
-        inputs = inputs.cuda()
+        if self.if_cuda:
+            inputs = inputs.cuda()
         outputs = self(inputs)
         return outputs.cpu().data.numpy()
-
-
-    # 获取CNN模型的输出
-
-    # def train(self, X_train, V, item_weight, seed):
-    #     # X_train is CNN_X
-    #     X_train = sequence.pad_sequences(X_train, maxlen=self.max_len)
-    #     np.random.seed(seed)
-    #     X_train = np.random.permutation(X_train)
-    #     np.random.seed(seed)
-    #     V = np.random.permutation(V)ojecti
-    #     np.random.seed(seed)
-    #     item_weight = np.random.permutation(item_weight)
-    #
-    #     print("Train...CNN module")
-    #     history = self.model.fit(X_train, V, verbose=0, batch_size=self.batch_size,
-    #                              epochs=self.nb_epoch, sample_weight=item_weight)
-    #
-    #     # cnn_loss_his = history.history['loss']
-    #     # cmp_cnn_loss = sorted(cnn_loss_his)[::-1]
-    #     # if cnn_loss_his != cmp_cnn_loss:
-    #     #     self.nb_epoch = 1
-    #     return history
-    #
-    # def get_projection_layer(self, X_train):
-    #     X_train = sequence.pad_sequences(X_train, maxlen=self.max_len)
-    #     Y = self.model.predict(X_train, batch_size=len(X_train))
-    #     return Y
